@@ -1,0 +1,31 @@
+services: 
+  nginx:
+    image: nginx:latest
+    ports:
+      - 8080:80
+    volumes:
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:0.10.0
+    ports:
+      - 9113:9113
+    entrypoint: nginx-prometheus-exporter -nginx.scrape-uri=http://nginx/stub_status
+    depends_on:
+      - nginx
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    ports:
+      - 3011:3000
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - 9090:9090
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    restart: unless-stopped
+    ports:
+      - 9100:9100
